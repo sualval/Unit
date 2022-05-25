@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -7,27 +8,33 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class Main {
+    final static String PATH = "D:/Games/savegames/";
+
     public static void main(String[] args) {
-        String file1 = "D:/Games/savegames/file1.dat";
-        String file2 = "D:/Games/savegames/file2.dat";
-        String file3 = "D:/Games/savegames/file3.dat";
-        String pathToZip = "D:/Games/savegames/zip7.zip";
-        String unzipToFolder = "D:/Games/savegames/";
+
+        String file1 = PATH + "file1.dat";
+        String file2 = PATH + "file2.dat";
+        String file3 = PATH + "file3.dat";
+        String pathToZip = PATH + "zip.zip";
+
 
         List<String> path = new ArrayList<>(Arrays.asList(file1, file2, file3));
         GameProgress gameProgress1 = new GameProgress(2, 4, 6, 8.5);
         GameProgress gameProgress2 = new GameProgress(7, 5, 5, 9.5);
         GameProgress gameProgress3 = new GameProgress(5, 2, 7, 1.5);
-
+        checkDir(PATH);
         saveGame(path.get(0), gameProgress1);
         saveGame(path.get(1), gameProgress2);
         saveGame(path.get(2), gameProgress3);
         zipFiles(pathToZip, path);
-        openZip(pathToZip, unzipToFolder);
-        System.out.println(openProgress(file3));
+        openZip(pathToZip, PATH);
+        openProgress(file3);
+
+
     }
 
     public static boolean saveGame(String path, GameProgress gameProgress) {
+
         try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(path))) {
             outputStream.writeObject(gameProgress);
         } catch (IOException exception) {
@@ -35,6 +42,7 @@ public class Main {
             return false;
         }
         return true;
+
     }
 
     public static boolean zipFiles(String path, List<String> list) {
@@ -58,7 +66,7 @@ public class Main {
         return true;
     }
 
-    public static void openZip(String pathToZip, String unzipToFolder) {
+    public static boolean openZip(String pathToZip, String unzipToFolder) {
         try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(pathToZip))) {
             ZipEntry zipEntry;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
@@ -71,7 +79,10 @@ public class Main {
             }
         } catch (IOException fileNotFoundException) {
             fileNotFoundException.printStackTrace();
+            return false;
         }
+        return true;
+
     }
 
     public static GameProgress openProgress(String path) {
@@ -82,6 +93,15 @@ public class Main {
             e.printStackTrace();
         }
         return gameProgress;
+    }
+
+    public static boolean checkDir(String dir) {
+        File file = new File(dir);
+        if (!file.isDirectory()) {
+            file.mkdirs();
+            return true;
+        }
+        return false;
     }
 
 }
