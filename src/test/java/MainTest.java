@@ -1,4 +1,4 @@
-import org.hamcrest.Matchers;
+
 import org.junit.jupiter.api.*;
 
 import java.io.*;
@@ -11,12 +11,11 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MainTest {
-    static String PATH = "D:/Games/savegames/";
-
-    String file1 = PATH + "file1.dat";
-    String pathToZip = PATH + "zip.zip";
-    List<String> path = new ArrayList<>(Arrays.asList(file1));
-    GameProgress gameProgress1 = new GameProgress(2, 4, 6, 8.5);
+    private static final String PATH = "D:/Games/savegames/";
+    private String fileName = PATH + "file.dat";
+    private String pathToZip = PATH + "zip.zip";
+    private List<String> path = new ArrayList<>(Arrays.asList(fileName));
+    private GameProgress gameProgress = new GameProgress(2, 4, 6, 8.5);
 
     @BeforeAll
     @Test
@@ -26,22 +25,21 @@ class MainTest {
 
     @BeforeEach
     void addFile() {
-        if (!new File(file1).isFile()) {
-            Main.saveGame(file1, gameProgress1);
+        if (!new File(fileName).exists()) {
+            Main.saveGame(fileName, gameProgress);
         }
     }
 
 
     @Test
     @DisplayName("Сохранение и чтение сохраненного файла")
-    void testSavingAndReadingSavedObject() throws IOException, ClassNotFoundException {
-        assertTrue(Main.saveGame(file1, gameProgress1));
+    void testSavingAndReadingSavedObject() {
+        assertTrue(Main.saveGame(fileName, gameProgress));
 
-        try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(file1))) {
-            assertEquals(objectInputStream.readObject(), gameProgress1);
-            assertThat(objectInputStream.readObject(), equalTo(gameProgress1));
-            assertEquals(objectInputStream.readObject(), gameProgress1);
-            assertThat(objectInputStream.readObject(), equalTo(gameProgress1));
+        try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(fileName))) {
+            GameProgress gameProgressRead = (GameProgress) objectInputStream.readObject();
+            assertEquals(gameProgress, gameProgressRead);
+            assertThat(gameProgress, equalTo(gameProgressRead));
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -50,7 +48,7 @@ class MainTest {
     @Test
     @DisplayName("Неверный путь к файлу")
     void saveGameTestFileNotFoundException() {
-        assertFalse(Main.saveGame("", gameProgress1));
+        assertFalse(Main.saveGame("", gameProgress));
 
     }
 
@@ -69,13 +67,8 @@ class MainTest {
     @Test
     @DisplayName("Проверка соответствия извлеченных файлов")
     void testOpenProgress() {
-
-        assertInstanceOf(GameProgress.class, Main.openProgress(file1));
-        assertEquals(Main.openProgress(file1), gameProgress1);
-        assertDoesNotThrow(() -> Main.openProgress(file1));
-        assertThat(Main.openProgress(file1), samePropertyValuesAs(gameProgress1));
-        assertThat(Main.openProgress(file1), instanceOf(GameProgress.class));
-        assertThat(Main.openProgress(file1), Matchers.notNullValue());
+        assertEquals(gameProgress, Main.openProgress(fileName));
+        assertThat(gameProgress, notNullValue());
     }
 
     @AfterAll
